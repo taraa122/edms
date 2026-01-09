@@ -1,68 +1,87 @@
-mod config;
+mod db;
+mod events;
 mod handlers;
+mod state;
 
 use axum::{
     routing::{get, post},
     Router,
 };
-use config::AppConfig;
-use handlers::{echo::echo, health::health, hello::hello};
-use std::{net::SocketAddr, time::Duration};
-use tower::limit::RateLimitLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
+use tracing::info;
+
+use edms::core::EdmsCore;
+use edms::query_loader::QueryMap;
+use edms::schema::initialize_schema_from_core;
+
+use std::{net::SocketAddr, sync::Arc};
+
+use handlers::{
+    bookmarks::{create_collection, ws_load_collection},
+    dataview::{dashboard, delete_folder, merge_folder, ws_make_folder_active},
+    repo::export_collection,
+    test_view::{
+        clear_bookmarks, clear_history, save_bookmark, save_history, stop,
+        ws_add_from_history_to_bookmark, ws_delete_from_bookmark, ws_load_bookmarks,
+        ws_load_endpoints, ws_run,
+    },
+    views::{home, list_view, test_view},
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
- 
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "rust_webserver=info,tower_http=info".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    tracing_subscriber::fmt().with_target(false).init();
 
-   
-    let config_path = std::env::var("CONFIG_PATH").unwrap_or_else(|_| "config/config.yaml".into());
-    let cfg = AppConfig::from_file(&config_path)?;
-    tracing::info!("Loaded config from {}: {:?}", config_path, cfg);
+    let db_path = std::env::var("EDMS_DB_PATH").unwrap_or_else(|_| "edms.db".to_string());
 
-   
-    let endpoint_count = 3; // /health, /hello/:name, /echo
-    if endpoint_count > cfg.limits.max_endpoints {
-        anyhow::bail!(
-            "Configured max_endpoints={} but server defines {} endpoints",
-            cfg.limits.max_endpoints,
-            endpoint_count
-        );
-    }
+    // Core + schema init
+    let core = Arc::new(EdmsCore::new(&db_path));
+    core.connect().map_err(|e| anyhow::anyhow!("{e:?}"))?;
+    initialize_schema_from_core(&core).map_err(|e| anyhow::anyhow!("{e:?}"))?;
 
-    
+    let queries = Arc::new(QueryMap::load_or_default());
+
+    let state = state::AppState::new(core, queries);
+
     let app = Router::new()
-        .route("/health", get(health))
-        .route("/hello/:name", get(hello))
-        .route("/echo", post(echo));
+        // Views (REST) — spreadsheet rows
+        .route("/home", get(home))
+        .route("/test-view", get(test_view))
+        .route("/list-view", get(list_view))
 
-    
-    let app = app.layer(RateLimitLayer::new(
-        cfg.limits.max_requests_per_minute as u64,
-        Duration::from_secs(60),
-    ));
+        // Test-view (WS + REST) — spreadsheet rows
+        .route("/test-view/endpoints/load", get(ws_load_endpoints))
+        .route("/test-view/bookmarks/load", get(ws_load_bookmarks))
+        .route("/test-view/run", get(ws_run))
+        .route("/test-view/stop", post(stop))
+        .route("/test-view/save/history", post(save_history))
+        .route("/test-view/save/bookmark", post(save_bookmark))
+        .route("/test-view/:bookmark/add", get(ws_add_from_history_to_bookmark))
+        .route("/test-view/:bookmark/delete", get(ws_delete_from_bookmark))
+        .route("/test-view/history/clearall", post(clear_history))
+        .route("/test-view/bookmark/clearall", post(clear_bookmarks))
 
-    
-    let addr = SocketAddr::from((
-        cfg.server
-            .host
-            .parse::<std::net::IpAddr>()
-            .expect("invalid host in config"),
-        cfg.server.port,
-    ));
+        // Bookmarks collection — spreadsheet rows
+        .route("/bookmarks/:collection/create", post(create_collection))
+        .route("/bookmarks/:collection/load", get(ws_load_collection))
 
-    tracing::info!("Starting server on http://{}", addr);
+        // Dataview — spreadsheet rows
+        .route("/dataview/:folder/delete", post(delete_folder))
+        .route("/dataview/:folder/merge", post(merge_folder))
+        .route("/dataview/:folder/active", get(ws_make_folder_active))
+        .route("/dataview/dashboard", get(dashboard))
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await?;
+        // Repo export — spreadsheet row
+        .route("/repo/:collection/:filename/export", get(export_collection))
 
+        // CORS + trace
+        .layer(CorsLayer::permissive())
+        .layer(TraceLayer::new_for_http())
+        .with_state(state);
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    info!("Listening on http://{addr}");
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    axum::serve(listener, app).await?;
     Ok(())
 }
