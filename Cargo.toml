@@ -16,6 +16,4 @@ tracing-subscriber = "0.3"
 anyhow = "1.0"
 reqwest = { version = "0.11", features = ["json"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
-
-# Update this path to where your edms folder actually is:
-edms = { path = "C:\Users\16084\HashedTokensWorkspace\advay.bhagwat\edms" }
+edms = { path = "C:/Users/16084/HashedTokensWorkspace/advay.bhagwat/edms" }
