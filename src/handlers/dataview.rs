@@ -1,5 +1,8 @@
 use axum::{
-    extract::{ws::{Message, WebSocket, WebSocketUpgrade}, Path, State},
+    extract::{
+        ws::{Message, WebSocket, WebSocketUpgrade},
+        Path, State,
+    },
     http::StatusCode,
     response::IntoResponse,
     Json,
@@ -21,17 +24,21 @@ pub async fn delete_folder(
             std::fs::remove_dir_all(&dir)?;
         }
         Ok::<(), std::io::Error>(())
-    }).await;
+    })
+    .await;
 
     match res {
-        Ok(Ok(())) => (StatusCode::OK, Json(json!({ "ok": true, "deleted_folder": folder }))),
+        Ok(Ok(())) => (
+            StatusCode::OK,
+            Json(json!({ "ok": true, "deleted_folder": folder })),
+        ),
         Ok(Err(e)) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({ "ok": false, "error": format!("{e:?}") })),
         ),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "ok": false, "error": format!("{e:?}") })),
+            Json(json!({ "ok": false, "error": format!("join error: {e:?}") })),
         ),
     }
 }
@@ -40,11 +47,13 @@ pub async fn merge_folder(
     State(_state): State<AppState>,
     Path(folder): Path<String>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    // "merge directories into active bookmark" is business logic you can define later.
-    // For now: just acknowledge.
     (
         StatusCode::OK,
-        Json(json!({ "ok": true, "merged_folder": folder, "note": "merge logic not implemented yet" })),
+        Json(json!({
+            "ok": true,
+            "merged_folder": folder,
+            "note": "merge logic not implemented yet"
+        })),
     )
 }
 
@@ -70,13 +79,13 @@ async fn handle_ws_make_active(mut socket: WebSocket, state: AppState, folder: S
         })
         .await;
 
-    let resp = json!({"type":"active_folder_set","folder": folder});
+    let resp = json!({ "type": "active_folder_set", "folder": folder });
     let _ = socket.send(Message::Text(resp.to_string())).await;
 
     // stream events
     let mut rx = state.events_tx.subscribe();
     while let Ok(evt) = rx.recv().await {
-        let msg = json!({"type":"event","event": evt});
+        let msg = json!({ "type": "event", "event": evt });
         if socket.send(Message::Text(msg.to_string())).await.is_err() {
             break;
         }
@@ -89,21 +98,25 @@ pub async fn dashboard(State(state): State<AppState>) -> (StatusCode, Json<serde
     let counts = tokio::task::spawn_blocking({
         let st = state.clone();
         move || {
-            let endpoints = db::list_endpoints(&st.core, &st.queries).map(|v| v.len()).unwrap_or(0);
+            let endpoints = db::list_endpoints(&st.core, &st.queries)
+                .map(|v| v.len())
+                .unwrap_or(0);
             let bookmarks = db::bookmarks_count_active(&st.core).unwrap_or(0);
             let history = db::history_count(&st.core).unwrap_or(0);
             (endpoints, bookmarks, history)
         }
-    }).await.ok().unwrap_or((0,0,0));
+    })
+    .await
+    .ok()
+    .unwrap_or((0, 0, 0));
 
     (
         StatusCode::OK,
         Json(json!({
-            "message": "loads all the data on which user can operate interactively",
+            "active_folder": active_folder,
             "endpoints": counts.0,
-            "active_bookmarks": counts.1,
+            "bookmarks": counts.1,
             "history": counts.2,
-            "active_folder": active_folder
         })),
     )
 }

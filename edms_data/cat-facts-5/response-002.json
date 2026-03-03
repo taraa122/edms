@@ -1,0 +1,112 @@
+{
+  "current_page": 1,
+  "data": [
+    {
+      "fact": "Unlike dogs, cats do not have a sweet tooth. Scientists believe this is due to a mutation in a key taste receptor.",
+      "length": 114
+    },
+    {
+      "fact": "When a cat chases its prey, it keeps its head level. Dogs and humans bob their heads up and down.",
+      "length": 97
+    },
+    {
+      "fact": "The technical term for a cat’s hairball is a “bezoar.”",
+      "length": 54
+    },
+    {
+      "fact": "A group of cats is called a “clowder.”",
+      "length": 38
+    },
+    {
+      "fact": "A cat can’t climb head first down a tree because every claw on a cat’s paw points the same way. To get down from a tree, a cat must back down.",
+      "length": 142
+    }
+  ],
+  "first_page_url": "https://catfact.ninja/facts?page=1",
+  "from": 1,
+  "last_page": 67,
+  "last_page_url": "https://catfact.ninja/facts?page=67",
+  "links": [
+    {
+      "active": false,
+      "label": "Previous",
+      "url": null
+    },
+    {
+      "active": true,
+      "label": "1",
+      "url": "https://catfact.ninja/facts?page=1"
+    },
+    {
+      "active": false,
+      "label": "2",
+      "url": "https://catfact.ninja/facts?page=2"
+    },
+    {
+      "active": false,
+      "label": "3",
+      "url": "https://catfact.ninja/facts?page=3"
+    },
+    {
+      "active": false,
+      "label": "4",
+      "url": "https://catfact.ninja/facts?page=4"
+    },
+    {
+      "active": false,
+      "label": "5",
+      "url": "https://catfact.ninja/facts?page=5"
+    },
+    {
+      "active": false,
+      "label": "6",
+      "url": "https://catfact.ninja/facts?page=6"
+    },
+    {
+      "active": false,
+      "label": "7",
+      "url": "https://catfact.ninja/facts?page=7"
+    },
+    {
+      "active": false,
+      "label": "8",
+      "url": "https://catfact.ninja/facts?page=8"
+    },
+    {
+      "active": false,
+      "label": "9",
+      "url": "https://catfact.ninja/facts?page=9"
+    },
+    {
+      "active": false,
+      "label": "10",
+      "url": "https://catfact.ninja/facts?page=10"
+    },
+    {
+      "active": false,
+      "label": "...",
+      "url": null
+    },
+    {
+      "active": false,
+      "label": "66",
+      "url": "https://catfact.ninja/facts?page=66"
+    },
+    {
+      "active": false,
+      "label": "67",
+      "url": "https://catfact.ninja/facts?page=67"
+    },
+    {
+      "active": false,
+      "label": "Next",
+      "url": "https://catfact.ninja/facts?page=2"
+    }
+  ],
+  "next_page_url": "https://catfact.ninja/facts?page=2",
+  "path": "https://catfact.ninja/facts",
+  "per_page": 5,
+  "prev_page_url": null,
+  "to": 5,
+  "total": 332
+}

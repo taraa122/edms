@@ -1,6 +1,7 @@
 mod db;
 mod events;
 mod handlers;
+mod ipc;
 mod state;
 mod timer;
 
@@ -14,11 +15,11 @@ use tracing::info;
 use edms::core::EdmsCore;
 use edms::query_loader::QueryMap;
 use edms::schema::initialize_schema_from_core;
-
 use std::{net::SocketAddr, sync::Arc};
 
 use handlers::{
     bookmarks::{create_collection, ws_load_collection},
+    callback::ipc_callback,
     dataview::{dashboard, delete_folder, merge_folder, ws_make_folder_active},
     repo::export_collection,
     test_view::{
@@ -41,16 +42,14 @@ async fn main() -> anyhow::Result<()> {
     initialize_schema_from_core(&core).map_err(|e| anyhow::anyhow!("{e:?}"))?;
 
     let queries = Arc::new(QueryMap::load_or_default());
-
     let state = state::AppState::new(core, queries);
 
     let app = Router::new()
-        // Views (REST) — spreadsheet rows
+        // Views (REST)
         .route("/home", get(home))
         .route("/test-view", get(test_view))
         .route("/list-view", get(list_view))
-
-        // Test-view (WS + REST) — spreadsheet rows
+        // Test-view (WS + REST)
         .route("/test-view/endpoints/load", get(ws_load_endpoints))
         .route("/test-view/bookmarks/load", get(ws_load_bookmarks))
         .route("/test-view/run", get(ws_run))
@@ -61,21 +60,19 @@ async fn main() -> anyhow::Result<()> {
         .route("/test-view/:bookmark/delete", get(ws_delete_from_bookmark))
         .route("/test-view/history/clearall", post(clear_history))
         .route("/test-view/bookmark/clearall", post(clear_bookmarks))
-
-        // Bookmarks collection — spreadsheet rows
+        // Bookmarks collection
         .route("/bookmarks/:collection/create", post(create_collection))
         .route("/bookmarks/:collection/load", get(ws_load_collection))
-
-        // Dataview — spreadsheet rows
+        // Dataview
         .route("/dataview/:folder/delete", post(delete_folder))
         .route("/dataview/:folder/merge", post(merge_folder))
         .route("/dataview/:folder/active", get(ws_make_folder_active))
         .route("/dataview/dashboard", get(dashboard))
-
-        // Repo export — spreadsheet row
+        // Repo export
         .route("/repo/:collection/:filename/export", get(export_collection))
-
-        // CORS + trace
+        // Internal: IPC callback (child processes report back here)
+        .route("/internal/callback", post(ipc_callback))
+        // Middleware
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
@@ -84,5 +81,6 @@ async fn main() -> anyhow::Result<()> {
     info!("Listening on http://{addr}");
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
+
     Ok(())
 }

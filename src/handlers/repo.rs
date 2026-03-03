@@ -9,7 +9,6 @@ pub async fn export_collection(
     State(state): State<AppState>,
     Path((collection, filename)): Path<(String, String)>,
 ) -> impl IntoResponse {
-    // Read endpoints from folder=collection
     let res = tokio::task::spawn_blocking({
         let st = state.clone();
         let collection = collection.clone();

@@ -1,0 +1,45 @@
+[33m9c79872[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31mgithub/main[m[33m)[m Merge branch 'main' of https://github.com/taraa122/edms
+[33madbc9cb[m Add edms core library
+[33mf752bd6[m Update README.md
+[33m18a0b5c[m Update README.md
+[33m21c4d0a[m[33m ([m[1;31morigin/tmp[m[33m, [m[1;32mtmp[m[33m)[m Remove target/ from tracking, add .gitignore
+[33mdf4eb58[m Add endpoint timer
+[33m463f9b0[m Edit mod.rs
+[33m1875046[m Edit Cargo.toml
+[33m1e9c7a2[m Edit Cargo.toml
+[33m2b3cbbd[m Edit config.rs
+[33m9baac43[m Edit state.rs
+[33m49fa59c[m Edit db.rs
+[33m7fff681[m Edit test_view.rs
+[33m0541c7f[m Edit events.rs
+[33mc570847[m Delete views.rs
+[33m45a117e[m Merge branch 'dev' into 'tmp'
+[33md04dc63[m Edit main.rs
+[33m8379cd6[m Add new file
+[33me280f4f[m Add new file
+[33m08d81d9[m Add new file
+[33md649b10[m Add new file
+[33mcda2679[m Add new file
+[33mac69a81[m Add new file
+[33m20ccbbb[m Add new file
+[33ma0fb711[m Add new file
+[33m35199fc[m Add new file
+[33m0b390a5[m Edit Cargo.toml
+[33m2bf50e3[m Add new file
+[33m2005bae[m Add new file
+[33m6407cf3[m Add new file
+[33md9827e2[m Add new file
+[33m46a35e0[m Add new file
+[33mf44e3b8[m Add new file
+[33m4c91bd1[m Add new file
+[33m3f09f57[m Add new file
+[33ma34f1a5[m Add new file
+[33ma08beae[m Add new file
+[33m59a6b2d[m Add new file
+[33m910d279[m Add new directory
+[33mf1bd8c7[m Add new file
+[33m92e18cf[m Add new file
+[33m3b51ea0[m Add new directory
+[33m0f916b4[m Add new file
+[33m583f145[m Add new file
+[33m9d34c89[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Initial commit

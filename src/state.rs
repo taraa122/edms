@@ -11,7 +11,7 @@ pub struct AppState {
     pub events_tx: broadcast::Sender<ServerEvent>,
     pub active_folder: Arc<RwLock<Option<String>>>,
     
-    // FIX #12: Shared HTTP client for connection pooling
+  
     pub http_client: reqwest::Client,
 }
 

@@ -1,0 +1,5 @@
+{
+  "code": 405,
+  "message": "No route found for \"DELETE http://dog.ceo/api/breeds/image/random\": Method Not Allowed (Allow: GET, HEAD) with code: 0",
+  "status": "error"
+}
